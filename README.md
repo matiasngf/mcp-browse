@@ -1,4 +1,4 @@
-# MCP Browse
+# MCP Fetch
 
 A Model Context Protocol server for browser automation using Puppeteer. Control browsers, create pages, and execute arbitrary JavaScript - all through the MCP interface.
 
