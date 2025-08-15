@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
-import { getBrowsers } from "../utils/browser-instances"
+import { getBrowsers, getPages } from "../utils/browser-instances"
 
 // Define the schema for tool parameters
 export const schema = {
@@ -47,12 +47,25 @@ export default async function closeBrowser({ browserId }: InferSchema<typeof sch
       console.warn(`Warning: Error closing browser ${browserId}:`, error)
     }
 
+    // Clean up any pages associated with this browser
+    const pages = getPages()
+    const pageIds = Object.keys(pages)
+    let cleanedPagesCount = 0
+
+    for (const pageId of pageIds) {
+      if (pages[pageId].browserId === browserId) {
+        delete pages[pageId]
+        cleanedPagesCount++
+      }
+    }
+
     // Remove from global object
     delete browsers[browserId]
 
     return JSON.stringify({
       success: true,
       message: `Browser ${browserId} closed successfully`,
+      cleanedPagesCount,
     }, null, 2)
   } catch (error) {
     return JSON.stringify({

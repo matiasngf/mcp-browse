@@ -85,7 +85,78 @@ export default function getRules() {
         },
         returns: {
           success: "boolean",
+          message: "string or error",
+          cleanedPagesCount: "number of pages cleaned up"
+        }
+      },
+
+      "create-page": {
+        description: "Create a new page (tab) in a specified browser instance",
+        schema: {
+          browserId: {
+            type: "string",
+            required: true,
+            description: "The ID of the browser instance to create a page in"
+          }
+        },
+        returns: {
+          success: "boolean",
+          pageId: "string (unique page identifier)",
+          browserId: "string",
+          message: "string"
+        }
+      },
+
+      "list-pages": {
+        description: "List all active pages across all browser instances",
+        schema: {},
+        returns: {
+          success: "boolean",
+          pageCount: "number",
+          pages: [{
+            id: "string",
+            browserId: "string",
+            browserExists: "boolean",
+            createdAt: "ISO 8601 timestamp",
+            url: "string",
+            title: "string",
+            isClosed: "boolean"
+          }]
+        }
+      },
+
+      "close-page": {
+        description: "Close a specific page and remove it from active pages",
+        schema: {
+          pageId: {
+            type: "string",
+            required: true,
+            description: "The ID of the page to close (obtained from create-page)"
+          }
+        },
+        returns: {
+          success: "boolean",
           message: "string or error"
+        }
+      },
+
+      "exec-page": {
+        description: "Execute arbitrary JavaScript code on a page with full Puppeteer API access",
+        schema: {
+          pageId: {
+            type: "string",
+            required: true,
+            description: "The ID of the page to execute code on"
+          },
+          source: {
+            type: "string",
+            required: true,
+            description: "JavaScript code to execute. Has access to 'page' object and should return a value"
+          }
+        },
+        returns: {
+          success: "boolean",
+          result: "string representation of the returned value or error message"
         }
       },
 
@@ -126,6 +197,16 @@ export default function getRules() {
         title: "Cross-Browser Testing",
         description: "Test your applications across different browser configurations and viewports.",
         example: "Launch multiple browsers with different viewport sizes to test responsive design"
+      },
+      {
+        title: "Dynamic Page Interaction with exec-page",
+        description: "Execute complex page interactions using the flexible exec-page tool with full Puppeteer API access.",
+        example: `Use exec-page to navigate, interact, and extract data:
+await page.goto('https://example.com');
+await page.type('#search', 'query');
+await page.click('#submit');
+const results = await page.$$eval('.result', els => els.map(el => el.textContent));
+return results;`
       }
     ],
 
@@ -134,8 +215,13 @@ export default function getRules() {
       "Use headless mode for automation tasks to improve performance",
       "Use headed mode (headless: false) for debugging and development",
       "Store browser IDs from launch-browser to manage multiple instances",
+      "Store page IDs from create-page to manage and interact with specific pages",
       "Check list-browsers before launching new instances to avoid resource waste",
-      "Handle errors gracefully - browsers may crash or become unresponsive"
+      "Use list-pages to track all active pages across browsers",
+      "Close pages when done to free memory, or they'll be cleaned when browser closes",
+      "Handle errors gracefully - browsers may crash or become unresponsive",
+      "For exec-page: Always return a value at the end of your code",
+      "For exec-page: Use try-catch blocks in your source code for better error handling"
     ],
 
     limitations: [
@@ -145,14 +231,14 @@ export default function getRules() {
     ],
 
     upcomingFeatures: [
-      "navigate-to: Navigate to a specific URL in a browser tab",
       "screenshot: Take screenshots of pages or elements",
-      "click: Click on page elements",
-      "type: Type text into input fields",
-      "wait-for: Wait for elements or conditions",
-      "evaluate: Execute JavaScript in page context",
+      "pdf: Generate PDF from pages",
       "get-cookies: Retrieve browser cookies",
-      "set-cookies: Set browser cookies"
+      "set-cookies: Set browser cookies",
+      "intercept-requests: Monitor and modify network requests",
+      "emulate-device: Emulate mobile devices and screen sizes",
+      "record-video: Record page interactions as video",
+      "performance-metrics: Collect detailed performance metrics"
     ]
   }
 
