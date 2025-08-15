@@ -1,5 +1,5 @@
 {
-  "name": "mcp-browse",
+  "name": "mcp-fetch",
   "version": "0.1.0",
   "description": "A Model Context Protocol server for browser automation using Puppeteer",
   "keywords": [
@@ -14,12 +14,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/matiasngf/mcp-browse.git"
+    "url": "git+https://github.com/matiasngf/mcp-fetch.git"
   },
   "bugs": {
-    "url": "https://github.com/matiasngf/mcp-browse/issues"
+    "url": "https://github.com/matiasngf/mcp-fetch/issues"
   },
-  "homepage": "https://github.com/matiasngf/mcp-browse#readme",
+  "homepage": "https://github.com/matiasngf/mcp-fetch#readme",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -42,6 +42,6 @@
     "dist"
   ],
   "bin": {
-    "mcp-browse": "./dist/stdio.js"
+    "mcp-fetch": "./dist/stdio.js"
   }
 }

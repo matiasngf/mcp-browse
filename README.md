@@ -8,12 +8,12 @@ Add this to your MCP settings configuration file:
 
 ```json
 {
-  "mcp-browse": {
+  "mcp-fetch": {
     "type": "stdio",
     "command": "npx",
     "args": [
       "-y",
-      "mcp-browse"
+      "mcp-fetch"
     ]
   }
 }
