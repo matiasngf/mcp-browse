@@ -17,4 +17,7 @@ if (!global.mcpBrowsers) {
   global.mcpBrowsers = {}
 }
 
-export { global }
+// Get the browsers object reference for managing browser instances
+export function getBrowsers(): Record<string, BrowserInstance> {
+  return global.mcpBrowsers
+}

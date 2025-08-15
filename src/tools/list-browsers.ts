@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
-import { global } from "../utils/browser-instances"
+import { getBrowsers } from "../utils/browser-instances"
 
 // Define the schema for tool parameters
 export const schema = {}
@@ -20,7 +20,8 @@ export const metadata: ToolMetadata = {
 // Tool implementation
 export default async function listBrowsers() {
   try {
-    const browserIds = Object.keys(global.mcpBrowsers)
+    const browsers = getBrowsers()
+    const browserIds = Object.keys(browsers)
 
     if (browserIds.length === 0) {
       return JSON.stringify({
@@ -30,9 +31,9 @@ export default async function listBrowsers() {
       }, null, 2)
     }
 
-    const browsers = await Promise.all(
+    const browserList = await Promise.all(
       browserIds.map(async (id) => {
-        const browserInstance = global.mcpBrowsers[id]
+        const browserInstance = browsers[id]
         const { browser, createdAt } = browserInstance
 
         try {
@@ -74,8 +75,8 @@ export default async function listBrowsers() {
 
     return JSON.stringify({
       success: true,
-      browserCount: browsers.length,
-      browsers,
+      browserCount: browserList.length,
+      browsers: browserList,
     }, null, 2)
   } catch (error) {
     return JSON.stringify({

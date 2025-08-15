@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
 import puppeteer from "puppeteer"
-import { BrowserInstance, global } from "../utils/browser-instances"
+import { BrowserInstance, getBrowsers } from "../utils/browser-instances"
 
 // Define the schema for tool parameters
 export const schema = {
@@ -60,7 +60,8 @@ export default async function launchBrowser({
       createdAt: new Date(),
     }
 
-    global.mcpBrowsers[id] = browserInstance
+    const browsers = getBrowsers()
+    browsers[id] = browserInstance
 
     return JSON.stringify({
       success: true,

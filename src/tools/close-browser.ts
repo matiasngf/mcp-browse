@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
-import { global } from "../utils/browser-instances"
+import { getBrowsers } from "../utils/browser-instances"
 
 // Define the schema for tool parameters
 export const schema = {
@@ -25,7 +25,8 @@ export const metadata: ToolMetadata = {
 export default async function closeBrowser({ browserId }: InferSchema<typeof schema>) {
   try {
     // Check if browser exists
-    const browserInstance = global.mcpBrowsers[browserId]
+    const browsers = getBrowsers()
+    const browserInstance = browsers[browserId]
 
     if (!browserInstance) {
       return JSON.stringify({
@@ -47,7 +48,7 @@ export default async function closeBrowser({ browserId }: InferSchema<typeof sch
     }
 
     // Remove from global object
-    delete global.mcpBrowsers[browserId]
+    delete browsers[browserId]
 
     return JSON.stringify({
       success: true,
