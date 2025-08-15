@@ -1,0 +1,62 @@
+import { z } from "zod"
+import { type ToolMetadata, type InferSchema } from "xmcp"
+import { global } from "../utils/browser-instances"
+
+// Define the schema for tool parameters
+export const schema = {
+  browserId: z.string()
+    .describe("The ID of the browser instance to close"),
+}
+
+
+// Define tool metadata
+export const metadata: ToolMetadata = {
+  name: "close-browser",
+  description: "Close a browser instance and remove it from the active browsers list",
+  annotations: {
+    title: "Close Browser",
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: false,
+  },
+}
+
+// Tool implementation
+export default async function closeBrowser({ browserId }: InferSchema<typeof schema>) {
+  try {
+    // Check if browser exists
+    const browserInstance = global.mcpBrowsers[browserId]
+
+    if (!browserInstance) {
+      return JSON.stringify({
+        success: false,
+        error: `Browser with ID '${browserId}' not found`,
+      }, null, 2)
+    }
+
+    const { browser } = browserInstance
+
+    // Close the browser
+    try {
+      if (browser.isConnected()) {
+        await browser.close()
+      }
+    } catch (error) {
+      // Browser might already be closed, continue with cleanup
+      console.warn(`Warning: Error closing browser ${browserId}:`, error)
+    }
+
+    // Remove from global object
+    delete global.mcpBrowsers[browserId]
+
+    return JSON.stringify({
+      success: true,
+      message: `Browser ${browserId} closed successfully`,
+    }, null, 2)
+  } catch (error) {
+    return JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    }, null, 2)
+  }
+}
