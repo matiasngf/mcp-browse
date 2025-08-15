@@ -1,107 +1,289 @@
-# xmcp Application
+# MCP Browse
 
-This project was created with [create-xmcp-app](https://github.com/basementstudio/xmcp).
+A Model Context Protocol server for browser automation using Puppeteer. Control browsers, create pages, and execute arbitrary JavaScript - all through the MCP interface.
 
-## Getting Started
+## Configuration
 
-First, run the development server:
+Add this to your MCP settings configuration file:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-
-This will start the MCP server with the selected transport method.
-
-## Project Structure
-
-This project uses the structured approach where tools are automatically discovered from the `src/tools` directory. Each tool is defined in its own file with the following structure:
-
-```typescript
-import { z } from "zod";
-import { type InferSchema } from "xmcp";
-
-// Define the schema for tool parameters
-export const schema = {
-  a: z.number().describe("First number to add"),
-  b: z.number().describe("Second number to add"),
-};
-
-// Define tool metadata
-export const metadata = {
-  name: "add",
-  description: "Add two numbers together",
-  annotations: {
-    title: "Add Two Numbers",
-    readOnlyHint: true,
-    destructiveHint: false,
-    idempotentHint: true,
-  },
-};
-
-// Tool implementation
-export default async function add({ a, b }: InferSchema<typeof schema>) {
-  return {
-    content: [{ type: "text", text: String(a + b) }],
-  };
+```json
+{
+  "mcp-browse": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "mcp-browse"
+    ]
+  }
 }
 ```
 
-## Adding New Tools
+## Features
 
-To add a new tool:
+- 🌐 **Browser Management**: Launch, list, and close browser instances
+- 📄 **Page Control**: Create, list, and close pages (tabs) in browsers
+- 🔧 **Flexible Execution**: Execute arbitrary JavaScript on pages with full Puppeteer API access
+- 📋 **Comprehensive Docs**: Built-in documentation via `get-rules` tool
 
-1. Create a new `.ts` file in the `src/tools` directory
-2. Export a `schema` object defining the tool parameters using Zod
-3. Export a `metadata` object with tool information
-4. Export a default function that implements the tool logic
+## Available Tools
 
-## Building for Production
+### Browser Management
 
-To build your project for production:
+#### `launch-browser`
+Launch a new browser instance with customizable settings.
 
-```bash
-npm run build
-# or
-yarn build
-# or
-pnpm build
+**Parameters:**
+- `headless` (boolean, optional): Run in headless mode. Default: `false`
+- `width` (number, optional): Browser window width. Default: `1280`
+- `height` (number, optional): Browser window height. Default: `720`
+
+**Returns:**
+```json
+{
+  "success": true,
+  "browserId": "browser_1234567890_abc123",
+  "message": "Browser launched successfully with ID: browser_1234567890_abc123",
+  "config": {
+    "headless": false,
+    "width": 1280,
+    "height": 720
+  }
+}
 ```
 
-This will compile your TypeScript code and output it to the `dist` directory.
+#### `list-browsers`
+List all active browser instances with their details.
 
-## Running the Server
+**Parameters:** None
 
-You can run the server for the transport built with:
-
-- HTTP: `node dist/http.js`
-- STDIO: `node dist/stdio.js`
-
-Given the selected transport method, you will have a custom start script added to the `package.json` file.
-
-For HTTP:
-
-```bash
-npm run start-http
-# or
-yarn start-http
-# or
-pnpm start-http
+**Returns:**
+```json
+{
+  "success": true,
+  "browserCount": 1,
+  "browsers": [{
+    "id": "browser_1234567890_abc123",
+    "createdAt": "2025-01-15T10:30:00.000Z",
+    "tabCount": 2,
+    "tabs": [{
+      "index": 0,
+      "url": "https://example.com",
+      "title": "Example Domain"
+    }],
+    "isConnected": true
+  }]
+}
 ```
 
-For STDIO:
+#### `close-browser`
+Close a browser instance and clean up resources.
 
-```bash
-npm run start-stdio
-# or
-yarn start-stdio
-# or
-pnpm start-stdio
+**Parameters:**
+- `browserId` (string, required): The ID of the browser to close
+
+**Returns:**
+```json
+{
+  "success": true,
+  "message": "Browser browser_1234567890_abc123 closed successfully",
+  "cleanedPagesCount": 2
+}
 ```
 
-## Learn More
+### Page Management
 
-- [xmcp Documentation](https://xmcp.dev/docs)
+#### `create-page`
+Create a new page (tab) in a specified browser instance.
+
+**Parameters:**
+- `browserId` (string, required): The ID of the browser to create a page in
+
+**Returns:**
+```json
+{
+  "success": true,
+  "pageId": "page_1234567890_xyz789",
+  "browserId": "browser_1234567890_abc123",
+  "message": "Page created successfully with ID: page_1234567890_xyz789"
+}
+```
+
+#### `list-pages`
+List all active pages across all browser instances.
+
+**Parameters:** None
+
+**Returns:**
+```json
+{
+  "success": true,
+  "pageCount": 2,
+  "pages": [{
+    "id": "page_1234567890_xyz789",
+    "browserId": "browser_1234567890_abc123",
+    "browserExists": true,
+    "createdAt": "2025-01-15T10:31:00.000Z",
+    "url": "https://example.com",
+    "title": "Example Domain",
+    "isClosed": false
+  }]
+}
+```
+
+#### `close-page`
+Close a specific page and remove it from active pages.
+
+**Parameters:**
+- `pageId` (string, required): The ID of the page to close
+
+**Returns:**
+```json
+{
+  "success": true,
+  "message": "Page page_1234567890_xyz789 closed successfully"
+}
+```
+
+### Page Interaction
+
+#### `exec-page`
+Execute arbitrary JavaScript code on a page with full Puppeteer API access.
+
+**Parameters:**
+- `pageId` (string, required): The ID of the page to execute code on
+- `source` (string, required): JavaScript code to execute. Has access to the `page` object
+
+**Returns:**
+```json
+{
+  "success": true,
+  "result": "The return value from your code as a string"
+}
+```
+
+**Example Usage:**
+```javascript
+// Navigate and interact with a page
+await page.goto('https://example.com');
+await page.type('#search', 'hello world');
+await page.click('#submit');
+
+// Extract data
+const title = await page.title();
+const results = await page.$$eval('.result', els => els.length);
+
+return { title, resultCount: results };
+```
+
+### Documentation
+
+#### `get-rules`
+Get comprehensive documentation about this MCP server.
+
+**Parameters:** None
+
+**Returns:** Complete documentation including schemas, use cases, and best practices.
+
+## Use Cases
+
+### Web Development & Debugging
+Launch browsers to test your web applications during development. View real-time changes, debug JavaScript, inspect elements, and test responsive designs.
+
+```javascript
+// Launch a visible browser
+launch-browser({ headless: false })
+
+// Create a page and navigate to your dev server
+create-page({ browserId: "browser_id" })
+exec-page({
+  pageId: "page_id",
+  source: `
+    await page.goto('http://localhost:3000');
+    const title = await page.title();
+    return title;
+  `
+})
+```
+
+### Automated Testing
+Run automated tests in headless mode to verify functionality, take screenshots, or perform regression testing.
+
+```javascript
+// Launch headless browser for testing
+launch-browser({ headless: true })
+
+// Run your test suite
+exec-page({
+  pageId: "page_id",
+  source: `
+    await page.goto('https://myapp.com');
+    await page.click('#login');
+    await page.type('#username', 'test@example.com');
+    await page.type('#password', 'password');
+    await page.click('#submit');
+    
+    // Wait for navigation
+    await page.waitForNavigation();
+    
+    // Check if login was successful
+    const url = page.url();
+    return url.includes('/dashboard') ? 'Login successful' : 'Login failed';
+  `
+})
+```
+
+### Web Scraping
+Extract data from websites that require JavaScript execution or complex interactions.
+
+```javascript
+exec-page({
+  pageId: "page_id",
+  source: `
+    await page.goto('https://news.site.com');
+    
+    // Wait for content to load
+    await page.waitForSelector('.article');
+    
+    // Extract article data
+    const articles = await page.$$eval('.article', elements => 
+      elements.map(el => ({
+        title: el.querySelector('.title')?.textContent,
+        summary: el.querySelector('.summary')?.textContent,
+        link: el.querySelector('a')?.href
+      }))
+    );
+    
+    return articles;
+  `
+})
+```
+
+## Best Practices
+
+1. **Always close browsers when done** to free up system resources
+2. **Use headless mode** for automation tasks to improve performance
+3. **Use headed mode** (headless: false) for debugging and development
+4. **Store browser and page IDs** to manage multiple instances
+5. **Check existing browsers** with `list-browsers` before launching new ones
+6. **Handle errors gracefully** - browsers may crash or become unresponsive
+7. **For exec-page**: Always return a value at the end of your code
+8. **For exec-page**: Use try-catch blocks for better error handling
+
+## Installation
+
+The browser (Chromium) will be automatically downloaded on first use. If you encounter issues, you can manually install it:
+
+```bash
+npx puppeteer browsers install chrome
+```
+
+## Limitations
+
+- Browser instances are stored in memory and will be lost if the MCP server restarts
+- Each browser instance consumes system resources (RAM, CPU)
+- Puppeteer requires Chromium to be downloaded (happens automatically)
+
+## License
+
+MIT

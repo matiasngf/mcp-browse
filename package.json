@@ -1,7 +1,17 @@
 {
   "name": "mcp-browse",
   "version": "0.1.0",
-  "description": "An xmcp application with tool syntax",
+  "description": "A Model Context Protocol server for browser automation using Puppeteer",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "puppeteer",
+    "browser-automation",
+    "web-scraping",
+    "testing"
+  ],
+  "author": "",
+  "license": "MIT",
   "engines": {
     "node": ">=20.0.0"
   },
