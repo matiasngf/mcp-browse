@@ -12,6 +12,14 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matiasngf/mcp-browse.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matiasngf/mcp-browse/issues"
+  },
+  "homepage": "https://github.com/matiasngf/mcp-browse#readme",
   "engines": {
     "node": ">=20.0.0"
   },
