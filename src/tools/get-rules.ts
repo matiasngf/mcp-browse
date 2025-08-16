@@ -71,6 +71,19 @@ page({ action: { type: "open-page", browserId: "browser_123" } })
 
 // Close a specific page
 page({ action: { type: "close-page", pageId: "page_456" } })`
+      },
+      {
+        title: "Browser Management with Unified Browser Tool",
+        description: "Use the unified browser tool to list, launch, and close browser instances with a flexible action-based interface.",
+        example: `Use browser tool with different actions:
+// List all browsers
+browser({ action: { type: "list-browsers" } })
+
+// Launch a new browser
+browser({ action: { type: "launch-browser", headless: false, width: 1280, height: 720 } })
+
+// Close a specific browser
+browser({ action: { type: "close-browser", browserId: "browser_123" } })`
       }
     ],
 
@@ -78,9 +91,9 @@ page({ action: { type: "close-page", pageId: "page_456" } })`
       "Always close browsers when done to free up system resources",
       "Use headless mode for automation tasks to improve performance",
       "Use headed mode (headless: false) for debugging and development",
-      "Store browser IDs from launch-browser to manage multiple instances",
+      "Store browser IDs from browser tool (action: launch-browser) to manage multiple instances",
       "Store page IDs from page tool (action: open-page) to manage and interact with specific pages",
-      "Check list-browsers before launching new instances to avoid resource waste",
+      "Check browser tool (action: list-browsers) before launching new instances to avoid resource waste",
       "Use page tool (action: list-pages) to track all active pages across browsers",
       "Close pages when done to free memory, or they'll be cleaned when browser closes",
       "Handle errors gracefully - browsers may crash or become unresponsive",
