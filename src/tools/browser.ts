@@ -23,6 +23,9 @@ export const schema = {
         .optional()
         .default(720)
         .describe("Browser window height in pixels. Defaults to 720"),
+      url: z.string()
+        .optional()
+        .describe("Optional URL to navigate to after launching the browser"),
     }),
     z.object({
       type: z.literal("close-browser"),
@@ -51,7 +54,7 @@ export default async function browser({ action }: InferSchema<typeof schema>) {
         return await listBrowsers()
 
       case "launch-browser":
-        return await launchBrowser(action.headless, action.width, action.height)
+        return await launchBrowser(action.headless, action.width, action.height, action.url)
 
       case "close-browser":
         return await closeBrowser(action.browserId)
@@ -133,7 +136,7 @@ async function listBrowsers() {
 }
 
 // Launch a new browser implementation
-async function launchBrowser(headless: boolean, width: number, height: number) {
+async function launchBrowser(headless: boolean, width: number, height: number, url?: string) {
   // Generate unique ID for this browser instance
   const id = `browser_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
@@ -159,6 +162,32 @@ async function launchBrowser(headless: boolean, width: number, height: number) {
   const browsers = getBrowsers()
   browsers[id] = browserInstance
 
+  // Navigate to URL if provided
+  let initialUrl = undefined
+  if (url) {
+    try {
+      // Get the default page (first tab)
+      const pages = await browser.pages()
+      if (pages.length > 0) {
+        await pages[0].goto(url, { waitUntil: 'networkidle2' })
+        initialUrl = pages[0].url()
+      }
+    } catch (error) {
+      // If navigation fails, continue but include a warning
+      return JSON.stringify({
+        success: true,
+        browserId: id,
+        message: `Browser launched successfully with ID: ${id}`,
+        warning: `Failed to navigate to ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        config: {
+          headless,
+          width,
+          height,
+        },
+      }, null, 2)
+    }
+  }
+
   return JSON.stringify({
     success: true,
     browserId: id,
@@ -168,6 +197,7 @@ async function launchBrowser(headless: boolean, width: number, height: number) {
       width,
       height,
     },
+    ...(initialUrl && { url: initialUrl }),
   }, null, 2)
 }
 

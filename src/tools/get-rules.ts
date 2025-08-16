@@ -85,6 +85,9 @@ browser({ action: { type: "list-browsers" } })
 // Launch a new browser
 browser({ action: { type: "launch-browser", headless: false, width: 1280, height: 720 } })
 
+// Launch a new browser with initial URL
+browser({ action: { type: "launch-browser", headless: false, url: "https://example.com" } })
+
 // Close a specific browser
 browser({ action: { type: "close-browser", browserId: "browser_123" } })`
       }
