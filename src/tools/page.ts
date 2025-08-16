@@ -11,6 +11,7 @@ export const schema = {
     z.object({
       type: z.literal("open-page"),
       browserId: z.string().describe("The ID of the browser instance to create a page in"),
+      url: z.string().optional().describe("Optional URL to navigate to after creating the page"),
     }),
     z.object({
       type: z.literal("close-page"),
@@ -39,7 +40,7 @@ export default async function page({ action }: InferSchema<typeof schema>) {
         return await listPages()
 
       case "open-page":
-        return await openPage(action.browserId)
+        return await openPage(action.browserId, action.url)
 
       case "close-page":
         return await closePage(action.pageId)
@@ -118,7 +119,7 @@ async function listPages() {
 }
 
 // Open a new page implementation
-async function openPage(browserId: string) {
+async function openPage(browserId: string, url?: string) {
   const browsers = getBrowsers()
   const browserInstance = browsers[browserId]
 
@@ -155,11 +156,29 @@ async function openPage(browserId: string) {
 
   pages[pageId] = pageInstance
 
+  // Navigate to URL if provided
+  if (url) {
+    try {
+      await page.goto(url, { waitUntil: 'networkidle2' })
+    } catch (error) {
+      // If navigation fails, still return success but include a warning
+      return JSON.stringify({
+        success: true,
+        pageId,
+        browserId,
+        message: `Page created successfully with ID: ${pageId}`,
+        warning: `Failed to navigate to ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        url: page.url(),
+      }, null, 2)
+    }
+  }
+
   return JSON.stringify({
     success: true,
     pageId,
     browserId,
     message: `Page created successfully with ID: ${pageId}`,
+    url: page.url(),
   }, null, 2)
 }
 
@@ -182,9 +201,8 @@ async function closePage(pageId: string) {
     if (!page.isClosed()) {
       await page.close()
     }
-  } catch (error) {
-    // Page might already be closed, continue with cleanup
-    console.warn(`Warning: Error closing page ${pageId}:`, error)
+  } catch {
+    // do nothing
   }
 
   // Remove from global object

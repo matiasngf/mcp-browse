@@ -69,6 +69,9 @@ page({ action: { type: "list-pages" } })
 // Open a new page in a browser
 page({ action: { type: "open-page", browserId: "browser_123" } })
 
+// Open a new page with a URL
+page({ action: { type: "open-page", browserId: "browser_123", url: "https://example.com" } })
+
 // Close a specific page
 page({ action: { type: "close-page", pageId: "page_456" } })`
       },

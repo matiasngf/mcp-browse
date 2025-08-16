@@ -191,9 +191,8 @@ async function closeBrowser(browserId: string) {
     if (browser.connected) {
       await browser.close()
     }
-  } catch (error) {
-    // Browser might already be closed, continue with cleanup
-    console.warn(`Warning: Error closing browser ${browserId}:`, error)
+  } catch {
+    // do nothing
   }
 
   // Clean up any pages associated with this browser
