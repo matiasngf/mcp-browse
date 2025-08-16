@@ -2,6 +2,7 @@ import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
 import puppeteer from "puppeteer"
 import { BrowserInstance, getBrowsers, getPages } from "../utils/browser-instances"
+import { type PageInstance } from "../utils/browser-instances"
 
 // Define the schema for tool parameters using discriminated union
 export const schema = {
@@ -164,13 +165,27 @@ async function launchBrowser(headless: boolean, width: number, height: number, u
 
   // Navigate to URL if provided
   let initialUrl = undefined
+  let initialPageId = undefined
   if (url) {
     try {
       // Get the default page (first tab)
-      const pages = await browser.pages()
-      if (pages.length > 0) {
-        await pages[0].goto(url, { waitUntil: 'networkidle2' })
-        initialUrl = pages[0].url()
+      const browserPages = await browser.pages()
+      if (browserPages.length > 0) {
+        const defaultPage = browserPages[0]
+        await defaultPage.goto(url, { waitUntil: 'networkidle2' })
+        initialUrl = defaultPage.url()
+
+        // Register this page in the page tracking system
+        const pageId = `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        const pages = getPages()
+        const pageInstance: PageInstance = {
+          id: pageId,
+          page: defaultPage,
+          browserId: id,
+          createdAt: new Date(),
+        }
+        pages[pageId] = pageInstance
+        initialPageId = pageId
       }
     } catch (error) {
       // If navigation fails, continue but include a warning
@@ -198,6 +213,7 @@ async function launchBrowser(headless: boolean, width: number, height: number, u
       height,
     },
     ...(initialUrl && { url: initialUrl }),
+    ...(initialPageId && { pageId: initialPageId }),
   }, null, 2)
 }
 
