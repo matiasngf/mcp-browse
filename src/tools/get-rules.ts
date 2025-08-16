@@ -40,12 +40,15 @@ const pageData = await page.evaluate(() => {
   }
 });`,
       rules: [
+        "DO NOT USE page.waitForTimeout, its deprecated",
         "ALWAYS wrap page.evaluate() in try-catch",
         "ALWAYS use || '' for properties that might be undefined",
         "className is STRING not array - use className.includes('x')",
         "Check elements exist: element?.innerText || ''",
         "Keep page.evaluate() SIMPLE - avoid setTimeout or complex async ops",
-        "The exec-page tool supports direct Puppeteer methods, not just page.evaluate()"
+        "The exec-page tool supports direct Puppeteer methods, not just page.evaluate()",
+        "Minimize tool calls - get all data in ONE page.evaluate() when possible",
+        "Avoid complex selectors - they often get truncated and fail"
       ]
     },
 
@@ -60,11 +63,19 @@ const pageData = await page.evaluate(() => {
       },
       {
         error: "page.waitForTimeout is not a function",
-        fix: "This puppeteer method is deprecated and not available anymore. Use page.evaluate() with setTimeout if needed"
+        fix: "This puppeteer method is deprecated and not available anymore. Use await new Promise(resolve => setTimeout(resolve, ms)) instead"
       },
       {
         error: "Manual event dispatching doesn't work",
         fix: "Use Puppeteer's native methods: await page.type() instead of dispatching keyboard events"
+      },
+      {
+        error: "Tool call truncated with <remaining_args_truncated />",
+        fix: "Your query is too complex. Simplify and focus on essential data only"
+      },
+      {
+        error: "Multiple sequential tool calls are slow",
+        fix: "Combine multiple data extractions into ONE page.evaluate() call"
       }
     ],
 
@@ -73,18 +84,23 @@ const pageData = await page.evaluate(() => {
       bestPractices: [
         "Use Puppeteer's native methods for reliability",
         "Always click before typing to ensure focus",
-        "Use appropriate typing delays for game/timed interactions"
+        "Use appropriate typing delays for game/timed interactions",
+        "Get ALL needed data in one call before starting interactions",
+        "Check results after actions in the same tool call when possible"
       ],
-      examples: `// ✅ GOOD: Use native Puppeteer methods
-await page.click('.input-field');
-await page.type('.input-field', 'Hello World', { delay: 10 });
+      examples: `// ✅ GOOD: Efficient approach - one analysis, then interact
+const pageData = await page.evaluate(() => ({
+  inputSelector: '.input-field',
+  textToType: document.querySelector('.prompt')?.textContent || '',
+  hasInput: !!document.querySelector('.input-field')
+}));
+await page.click(pageData.inputSelector);
+await page.type(pageData.inputSelector, pageData.textToType, { delay: 10 });
 
-// ❌ BAD: Manual event dispatching (often fails)
-await page.evaluate(() => {
-  const input = document.querySelector('input');
-  const event = new KeyboardEvent('keydown', { key: 'a' });
-  input.dispatchEvent(event); // Often doesn't work!
-});
+// ❌ BAD: Multiple sequential analysis calls
+const input = await page.evaluate(() => document.querySelector('.input-field'));
+const text = await page.evaluate(() => document.querySelector('.prompt')?.textContent);
+// Too many separate calls!
 
 // ✅ GOOD: Simple data extraction
 const data = await page.evaluate(() => ({
@@ -110,19 +126,47 @@ const data = await page.evaluate(() => {
 
     workflow: [
       "Launch browser with URL",
-      "Use exec-page to analyze page structure",
+      "Use ONE exec-page call to analyze ALL page structure needed",
       "For interactions: use Puppeteer methods (page.click, page.type)",
       "For data extraction: use page.evaluate with simple synchronous code",
+      "Minimize tool calls - batch operations when possible",
       "Close browser when done"
     ],
 
-    gamingTips: {
-      title: "Tips for Gaming/Real-time Sites",
+    performanceOptimization: {
+      title: "Performance Best Practices",
       tips: [
-        "Use very low delays (5-10ms) for competitive typing games",
+        "CRITICAL: Minimize exec-page calls - each one is expensive",
+        "Get ALL data you need in ONE page.evaluate() call",
+        "Avoid making 3+ separate calls to check different page states",
+        "Use selectors directly in Puppeteer methods instead of finding them first",
+        "Keep queries simple to avoid truncation",
+        "For delays, use: await new Promise(resolve => setTimeout(resolve, ms))"
+      ],
+      example: `// ❌ BAD: Too many tool calls
+const hasButton = await page.evaluate(() => !!document.querySelector('.btn'));
+const buttonText = await page.evaluate(() => document.querySelector('.btn')?.innerText);
+const isEnabled = await page.evaluate(() => !document.querySelector('.btn')?.disabled);
+
+// ✅ GOOD: One efficient call
+const buttonData = await page.evaluate(() => {
+  const btn = document.querySelector('.btn');
+  return {
+    exists: !!btn,
+    text: btn?.innerText || '',
+    enabled: btn ? !btn.disabled : false
+  };
+});`
+    },
+
+    gamingTips: {
+      title: "Tips for Dynamic/Real-time Sites",
+      tips: [
+        "Use very low delays (5-10ms) for time-sensitive interactions",
         "Focus inputs before typing: await page.click() then page.type()",
         "Check for completion indicators after actions",
-        "Some games require specific event sequences - native methods work best"
+        "Some sites require specific event sequences - native methods work best",
+        "Avoid screenshots unless specifically needed - they're expensive"
       ]
     }
   }
