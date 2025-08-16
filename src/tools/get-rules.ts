@@ -58,6 +58,19 @@ await page.type('#search', 'query');
 await page.click('#submit');
 const results = await page.$$eval('.result', els => els.map(el => el.textContent));
 return results;`
+      },
+      {
+        title: "Page Management with Unified Page Tool",
+        description: "Use the unified page tool to list, open, and close browser pages with a flexible action-based interface.",
+        example: `Use page tool with different actions:
+// List all pages
+page({ action: { type: "list-pages" } })
+
+// Open a new page in a browser
+page({ action: { type: "open-page", browserId: "browser_123" } })
+
+// Close a specific page
+page({ action: { type: "close-page", pageId: "page_456" } })`
       }
     ],
 
@@ -66,9 +79,9 @@ return results;`
       "Use headless mode for automation tasks to improve performance",
       "Use headed mode (headless: false) for debugging and development",
       "Store browser IDs from launch-browser to manage multiple instances",
-      "Store page IDs from create-page to manage and interact with specific pages",
+      "Store page IDs from page tool (action: open-page) to manage and interact with specific pages",
       "Check list-browsers before launching new instances to avoid resource waste",
-      "Use list-pages to track all active pages across browsers",
+      "Use page tool (action: list-pages) to track all active pages across browsers",
       "Close pages when done to free memory, or they'll be cleaned when browser closes",
       "Handle errors gracefully - browsers may crash or become unresponsive",
       "For exec-page: Always return a value at the end of your code",
