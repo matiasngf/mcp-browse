@@ -29,6 +29,8 @@
     "start": "node dist/stdio.js"
   },
   "dependencies": {
+    "graphql": "^16.11.0",
+    "graphql-request": "^7.2.0",
     "puppeteer": "^24.16.2",
     "xmcp": "^0.1.10",
     "zod": "3.24.4"
