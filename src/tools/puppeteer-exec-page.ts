@@ -12,10 +12,10 @@ export const schema = {
 
 // Define tool metadata
 export const metadata: ToolMetadata = {
-  name: "exec-page",
+  name: "puppeteer-exec-page",
   description: "Execute arbitrary JavaScript code on a page with access to Puppeteer's page API",
   annotations: {
-    title: "Execute Page Code",
+    title: "Puppeteer Execute Page Code",
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,

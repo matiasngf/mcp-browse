@@ -22,10 +22,10 @@ export const schema = {
 
 // Define tool metadata
 export const metadata: ToolMetadata = {
-  name: "page",
+  name: "puppeteer-page",
   description: "Manage browser pages - list all pages, open new pages, or close existing pages",
   annotations: {
-    title: "Page Management",
+    title: "Puppeteer Page Management",
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,

@@ -37,10 +37,10 @@ export const schema = {
 
 // Define tool metadata
 export const metadata: ToolMetadata = {
-  name: "browser",
+  name: "puppeteer-browser",
   description: "Manage browser instances - list all browsers, launch new browsers, or close existing browsers",
   annotations: {
-    title: "Browser Management",
+    title: "Puppeteer Browser Management",
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,
