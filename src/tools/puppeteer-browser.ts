@@ -1,8 +1,14 @@
 import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
 import puppeteer from "puppeteer"
-import { BrowserInstance, getBrowsers, getPages } from "../utils/browser-instances"
-import { type PageInstance } from "../utils/browser-instances"
+import {
+  BrowserInstance,
+  PageInstance,
+  getBrowsers,
+  getPages,
+  generateBrowserId,
+  generatePageId
+} from "../utils/browser-instances"
 
 // Define the schema for tool parameters using discriminated union
 export const schema = {
@@ -139,7 +145,7 @@ async function listBrowsers() {
 // Launch a new browser implementation
 async function launchBrowser(headless: boolean, width: number, height: number, url?: string) {
   // Generate unique ID for this browser instance
-  const id = `browser_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const id = generateBrowserId()
 
   // Launch browser with specified options
   const browser = await puppeteer.launch({
@@ -176,7 +182,7 @@ async function launchBrowser(headless: boolean, width: number, height: number, u
         initialUrl = defaultPage.url()
 
         // Register this page in the page tracking system
-        const pageId = `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        const pageId = generatePageId()
         const pages = getPages()
         const pageInstance: PageInstance = {
           id: pageId,

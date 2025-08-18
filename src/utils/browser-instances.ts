@@ -1,4 +1,5 @@
 import { Browser, Page } from "puppeteer"
+import { generate as generateWords } from "random-words"
 
 // Define the type for page instance
 export interface PageInstance {
@@ -13,6 +14,18 @@ export interface BrowserInstance {
   id: string
   browser: Browser
   createdAt: Date
+}
+
+// Generate unique browser ID using random words
+export function generateBrowserId(): string {
+  const words = generateWords({ exactly: 4, join: "-" }) as string
+  return `browser-${words}`
+}
+
+// Generate unique page ID using random words
+export function generatePageId(): string {
+  const words = generateWords({ exactly: 4, join: "-" }) as string
+  return `page-${words}`
 }
 
 // Initialize global object to store browser instances

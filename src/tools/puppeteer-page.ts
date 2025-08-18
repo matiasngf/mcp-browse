@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
-import { getBrowsers, getPages, PageInstance } from "../utils/browser-instances"
+import { getBrowsers, getPages, PageInstance, generatePageId } from "../utils/browser-instances"
 
 // Define the schema for tool parameters using discriminated union
 export const schema = {
@@ -143,7 +143,7 @@ async function openPage(browserId: string, url?: string) {
   const page = await browser.newPage()
 
   // Generate unique ID for this page instance
-  const pageId = `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const pageId = generatePageId()
 
   // Store page instance
   const pages = getPages()
