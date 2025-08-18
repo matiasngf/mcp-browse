@@ -12,8 +12,8 @@ importers:
         specifier: ^24.16.2
         version: 24.16.2(typescript@5.9.2)
       xmcp:
-        specifier: ^0.1.9
-        version: 0.1.9(@types/node@24.2.1)(swc-loader@0.2.6(@swc/core@1.13.3)(webpack@5.101.2(@swc/core@1.13.3)))(typescript@5.9.2)(zod@3.24.4)
+        specifier: ^0.1.10
+        version: 0.1.10(@types/node@24.2.1)(swc-loader@0.2.6(@swc/core@1.13.3)(webpack@5.101.2(@swc/core@1.13.3)))(typescript@5.9.2)(zod@3.24.4)
       zod:
         specifier: 3.24.4
         version: 3.24.4
@@ -2668,8 +2668,8 @@ packages:
     resolution: {integrity: sha512-h3Fbisa2nKGPxCpm89Hk33lBLsnaGBvctQopaBSOW/uIs6FTe1ATyAnKFJrzVs9vpGdsTe73WF3V4lIsk4Gacw==}
     engines: {node: '>=18'}
 
-  xmcp@0.1.9:
-    resolution: {integrity: sha512-dTZH7Zyzspwm0kkhck9ZsIJQupKAOFAiaNr+CqoUUGrRYJ/+fIPNYIcSgCDvxfokCC2phofJUFVaYCJHUrMUsQ==}
+  xmcp@0.1.10:
+    resolution: {integrity: sha512-BWoHLLYLxeEEK/nj3LEhE83pmozOolm+4G9C+YUZC0PcOxCtd+zTedUQcnVDH/Y59LB7n+eLgZeVCaub2mEYnw==}
     hasBin: true
     peerDependencies:
       swc-loader: ^0.2.6
@@ -5383,7 +5383,7 @@ snapshots:
     dependencies:
       is-wsl: 3.1.0
 
-  xmcp@0.1.9(@types/node@24.2.1)(swc-loader@0.2.6(@swc/core@1.13.3)(webpack@5.101.2(@swc/core@1.13.3)))(typescript@5.9.2)(zod@3.24.4):
+  xmcp@0.1.10(@types/node@24.2.1)(swc-loader@0.2.6(@swc/core@1.13.3)(webpack@5.101.2(@swc/core@1.13.3)))(typescript@5.9.2)(zod@3.24.4):
     dependencies:
       '@modelcontextprotocol/inspector': 0.14.3(@swc/core@1.13.3)(@types/node@24.2.1)(typescript@5.9.2)
       '@modelcontextprotocol/sdk': 1.17.3
