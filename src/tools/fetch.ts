@@ -68,14 +68,32 @@ export const metadata: ToolMetadata = {
 
 // Tool implementation
 export default async function fetch(params: InferSchema<typeof schema>) {
+  console.log('[Fetch Tool] Starting fetch with params:', params);
+  
   try {
     const { url, method, headers, body, timeout, followRedirects, signal, ...fetchOptions } = params
+
+    // Validate URL
+    if (!url || url.trim() === '') {
+      throw new TypeError('Invalid URL: URL cannot be empty');
+    }
+
+    try {
+      new URL(url);
+    } catch {
+      throw new TypeError('Invalid URL: Not a valid URL format');
+    }
 
     // Build fetch options
     const options: RequestInit = {
       method,
       headers: headers || {},
       ...fetchOptions,
+    }
+
+    // Handle followRedirects parameter
+    if (followRedirects === false) {
+      options.redirect = 'manual';
     }
 
     // Add body if provided and method supports it
@@ -168,23 +186,30 @@ export default async function fetch(params: InferSchema<typeof schema>) {
     }, null, 2)
 
   } catch (error) {
+    console.log('[Fetch Tool] Error occurred:', error);
+    
     // Handle different error types
     let errorMessage = "Unknown error occurred"
     let errorType = "UnknownError"
 
     if (error instanceof Error) {
       errorMessage = error.message
+      console.log('[Fetch Tool] Error name:', error.name, 'Error message:', error.message);
 
       if (error.name === "AbortError") {
         errorType = "TimeoutError"
         errorMessage = `Request timed out after ${params.timeout}ms`
-      } else if (error.message.includes("Failed to fetch")) {
+      } else if (error.message.includes("Failed to fetch") || error.message.includes("ECONNREFUSED") || error.message.includes("ENOTFOUND")) {
         errorType = "NetworkError"
         errorMessage = "Network error - could not connect to the server"
-      } else if (error.message.includes("Invalid URL")) {
+      } else if (error.message.includes("Invalid URL") || error.message.includes("invalid URL")) {
+        errorType = "InvalidURLError"
+      } else if (error instanceof TypeError && (error.message.includes("fetch") || error.message.includes("URL"))) {
         errorType = "InvalidURLError"
       }
     }
+
+    console.log('[Fetch Tool] Final error type:', errorType, 'Final error message:', errorMessage);
 
     return JSON.stringify({
       success: false,

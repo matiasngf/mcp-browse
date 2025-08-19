@@ -41,7 +41,7 @@ export class MCPTestHelper {
   }
 
   // WebSocket test helpers
-  async testSocketConnect(url: string, options?: any): Promise<string> {
+  async testSocketConnect(url: string, options?: any): Promise<any> {
     const result = await this.client.callSocketTool({
       action: {
         type: "connect",
@@ -49,7 +49,16 @@ export class MCPTestHelper {
         ...options
       }
     });
-    return result.socketId;
+
+    // For error cases, return the full result object
+    // For success cases, we can still return the socketId or the full result
+    if (result.success === false) {
+      return result;
+    }
+
+    // For backwards compatibility, return socketId for successful connections
+    // but tests expecting full result should use the result directly
+    return result.socketId || result;
   }
 
   async testSocketSend(socketId: string, message: any, binary?: boolean): Promise<any> {
@@ -92,14 +101,23 @@ export class MCPTestHelper {
   }
 
   // Browser test helpers
-  async testBrowserLaunch(options?: any): Promise<string> {
+  async testBrowserLaunch(options?: any): Promise<any> {
     const result = await this.client.callBrowserTool({
       action: {
         type: "launch-browser",
         ...options
       }
     });
-    return result.browserId;
+
+    // For error cases, return the full result object
+    // For success cases, we can still return the browserId or the full result
+    if (result.success === false) {
+      return result;
+    }
+
+    // For backwards compatibility, return browserId for successful connections
+    // but tests expecting full result should use the result directly
+    return result.browserId || result;
   }
 
   async testBrowserList(): Promise<any> {
@@ -120,14 +138,23 @@ export class MCPTestHelper {
   }
 
   // Page test helpers
-  async testPageCreate(browserId: string): Promise<string> {
+  async testPageCreate(browserId: string): Promise<any> {
     const result = await this.client.callPageTool({
       action: {
         type: "open-page",
         browserId
       }
     });
-    return result.pageId;
+
+    // For error cases, return the full result object
+    // For success cases, we can still return the pageId or the full result
+    if (result.success === false) {
+      return result;
+    }
+
+    // For backwards compatibility, return pageId for successful page creation
+    // but tests expecting full result should use the result directly
+    return result.pageId || result;
   }
 
   async testPageList(): Promise<any> {
