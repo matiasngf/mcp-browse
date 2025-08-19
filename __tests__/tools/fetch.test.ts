@@ -1,27 +1,29 @@
-import { getClient } from '../setup/jest.setup';
+import { getClient, getTestServerUrl } from '../setup/jest.setup';
 import { MCPTestHelper } from '../test-utils/jest-mcp-helper';
 
 describe('Fetch Tool', () => {
   let client: MCPTestHelper;
+  let testServerUrl: string;
 
   beforeAll(() => {
     client = getClient();
+    testServerUrl = getTestServerUrl();
   });
 
   describe('Basic HTTP Methods', () => {
     test('should perform GET request', async () => {
-      const result = await client.testFetch('https://httpbin.org/get');
+      const result = await client.testFetch(`${testServerUrl}/get`);
 
       expect(result).toBeDefined();
       expect(result.body).toBeDefined();
-      expect(result.body.url).toBe('https://httpbin.org/get');
+      expect(result.body.url).toBe(`${testServerUrl}/get`);
       expect(result.body.headers).toBeDefined();
       expect(result.status).toBe(200);
     });
 
     test('should perform POST request with JSON body', async () => {
       const testData = { test: 'data', number: 123 };
-      const result = await client.testFetch('https://httpbin.org/post', {
+      const result = await client.testFetch(`${testServerUrl}/post`, {
         method: 'POST',
         body: JSON.stringify(testData),
         headers: { 'Content-Type': 'application/json' }
@@ -34,7 +36,7 @@ describe('Fetch Tool', () => {
     });
 
     test('should perform PUT request', async () => {
-      const result = await client.testFetch('https://httpbin.org/put', {
+      const result = await client.testFetch(`${testServerUrl}/put`, {
         method: 'PUT',
         body: JSON.stringify({ update: 'value' }),
         headers: { 'Content-Type': 'application/json' }
@@ -46,17 +48,17 @@ describe('Fetch Tool', () => {
     });
 
     test('should perform DELETE request', async () => {
-      const result = await client.testFetch('https://httpbin.org/delete', {
+      const result = await client.testFetch(`${testServerUrl}/delete`, {
         method: 'DELETE'
       });
 
       expect(result.status).toBe(200);
-      expect(result.body.url).toBe('https://httpbin.org/delete');
+      expect(result.body.url).toBe(`${testServerUrl}/delete`);
       expect(result.body.headers).toBeDefined();
     });
 
     test('should perform PATCH request', async () => {
-      const result = await client.testFetch('https://httpbin.org/patch', {
+      const result = await client.testFetch(`${testServerUrl}/patch`, {
         method: 'PATCH',
         body: JSON.stringify({ patch: 'data' }),
         headers: { 'Content-Type': 'application/json' }
@@ -74,7 +76,7 @@ describe('Fetch Tool', () => {
         'X-Custom-Header': 'test-value'
       };
 
-      const result = await client.testFetch('https://httpbin.org/headers', {
+      const result = await client.testFetch(`${testServerUrl}/headers`, {
         headers: customHeaders
       });
 
@@ -85,12 +87,12 @@ describe('Fetch Tool', () => {
 
   describe('Response Handling', () => {
     test('should handle different status codes', async () => {
-      const result404 = await client.testFetch('https://httpbin.org/status/404');
+      const result404 = await client.testFetch(`${testServerUrl}/status/404`);
       expect(result404.status).toBe(404);
     });
 
     test('should handle JSON responses', async () => {
-      const result = await client.testFetch('https://httpbin.org/json');
+      const result = await client.testFetch(`${testServerUrl}/json`);
 
       expect(result.status).toBe(200);
       expect(result.body).toBeDefined();
@@ -99,7 +101,7 @@ describe('Fetch Tool', () => {
 
   describe('Request Options', () => {
     test('should handle redirects', async () => {
-      const result = await client.testFetch('https://httpbin.org/redirect/1', {
+      const result = await client.testFetch(`${testServerUrl}/redirect/1`, {
         redirect: 'follow'
       });
 
@@ -110,7 +112,7 @@ describe('Fetch Tool', () => {
   describe('Error Handling', () => {
     test('should handle basic error cases', async () => {
       const result = await client.testFetch('');
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
@@ -123,25 +125,25 @@ describe('Fetch Tool', () => {
         field2: 'value2'
       }).toString();
 
-      const result = await client.testFetch('https://httpbin.org/post', {
+      const result = await client.testFetch(`${testServerUrl}/post`, {
         method: 'POST',
         body: formData,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
 
       expect(result).toBeDefined();
-      expect([200, 503]).toContain(result.status); // Allow 503 for service unavailable
+      expect(result.status).toBe(200);
     });
 
     test('should handle text content', async () => {
-      const result = await client.testFetch('https://httpbin.org/post', {
+      const result = await client.testFetch(`${testServerUrl}/post`, {
         method: 'POST',
         body: 'Plain text content',
         headers: { 'Content-Type': 'text/plain' }
       });
 
       expect(result).toBeDefined();
-      expect([200, 503]).toContain(result.status); // Allow 503 for service unavailable
+      expect(result.status).toBe(200);
     });
   });
 });

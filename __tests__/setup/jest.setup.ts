@@ -2,14 +2,18 @@ import { MCPTestHelper } from '../test-utils/jest-mcp-helper';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { startTestServer, TestServerInstance } from '../mocks/test-server';
 
 // Extend the global namespace
 declare global {
   var mcpClient: MCPTestHelper;
   var mcpClientInitialized: boolean;
+  var testServer: TestServerInstance;
+  var testServerUrl: string;
 }
 
 let globalMCPClient: MCPTestHelper;
+let globalTestServer: TestServerInstance;
 
 // Build the server before all tests - but only once
 beforeAll(async () => {
@@ -17,6 +21,13 @@ beforeAll(async () => {
   if (global.mcpClientInitialized) {
     return;
   }
+
+  // Start the test server first
+  console.log('Starting mock test server...');
+  globalTestServer = await startTestServer(0); // Use port 0 for automatic port assignment
+  global.testServer = globalTestServer;
+  global.testServerUrl = `http://localhost:${globalTestServer.port}`;
+  console.log(`Mock test server started at ${global.testServerUrl}`);
 
   // Check if build is needed by looking for the dist directory
   const distPath = path.join(process.cwd(), 'dist', 'stdio.js');
@@ -52,6 +63,16 @@ afterAll(async () => {
       // Silent cleanup
     }
   }
+
+  // Stop the test server
+  if (globalTestServer) {
+    try {
+      await globalTestServer.close();
+      console.log('Mock test server stopped');
+    } catch (error) {
+      console.error('Error stopping test server:', error);
+    }
+  }
 }, 10000);
 
 // Add test timeout extension
@@ -63,6 +84,13 @@ export function getClient(): MCPTestHelper {
     throw new Error('MCP client not initialized');
   }
   return global.mcpClient;
+}
+
+export function getTestServerUrl(): string {
+  if (!global.testServerUrl) {
+    throw new Error('Test server not initialized');
+  }
+  return global.testServerUrl;
 }
 
 // Add fail function for tests that use it

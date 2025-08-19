@@ -1,12 +1,15 @@
-import { getClient } from '../setup/jest.setup';
+import { getClient, getTestServerUrl } from '../setup/jest.setup';
 import { MCPTestHelper } from '../test-utils/jest-mcp-helper';
 
 describe('WebSocket Tool', () => {
   let client: MCPTestHelper;
   let socketId: string | null = null;
+  let wsUrl: string;
 
   beforeAll(() => {
     client = getClient();
+    const testServerUrl = getTestServerUrl();
+    wsUrl = testServerUrl.replace('http://', 'ws://') + '/ws';
   });
 
   afterEach(async () => {
@@ -23,7 +26,7 @@ describe('WebSocket Tool', () => {
 
   describe('Connection Management', () => {
     test('should connect to WebSocket server', async () => {
-      socketId = await client.testSocketConnect('wss://echo.websocket.org');
+      socketId = await client.testSocketConnect(wsUrl);
 
       expect(socketId).toBeDefined();
       expect(typeof socketId).toBe('string');
@@ -31,7 +34,7 @@ describe('WebSocket Tool', () => {
     });
 
     test('should list connected sockets', async () => {
-      socketId = await client.testSocketConnect('wss://echo.websocket.org');
+      socketId = await client.testSocketConnect(wsUrl);
 
       const result = await client.testSocketList();
 
@@ -42,11 +45,11 @@ describe('WebSocket Tool', () => {
       const socket = result.sockets.find((s: any) => s.id === socketId);
       expect(socket).toBeDefined();
       expect(socket.status).toBe('open');
-      expect(socket.url).toBe('wss://echo.websocket.org');
+      expect(socket.url).toBe(wsUrl);
     });
 
     test('should close WebSocket connection', async () => {
-      socketId = await client.testSocketConnect('wss://echo.websocket.org');
+      socketId = await client.testSocketConnect(wsUrl);
 
       const closeResult = await client.testSocketClose(socketId!);
 
@@ -62,7 +65,7 @@ describe('WebSocket Tool', () => {
     });
 
     test('should connect with custom configuration', async () => {
-      socketId = await client.testSocketConnect('wss://echo.websocket.org', {
+      socketId = await client.testSocketConnect(wsUrl, {
         headers: {
           'X-Custom-Header': 'test-value'
         },
@@ -82,7 +85,7 @@ describe('WebSocket Tool', () => {
 
   describe('Message Exchange', () => {
     beforeEach(async () => {
-      socketId = await client.testSocketConnect('wss://echo.websocket.org');
+      socketId = await client.testSocketConnect(wsUrl);
       await new Promise(resolve => setTimeout(resolve, 1000));
     });
 
@@ -95,7 +98,7 @@ describe('WebSocket Tool', () => {
 
   describe('Message History Management', () => {
     test('should retrieve messages', async () => {
-      socketId = await client.testSocketConnect('wss://echo.websocket.org');
+      socketId = await client.testSocketConnect(wsUrl);
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const result = await client.testSocketReceive(socketId!, 'get-all');
@@ -115,8 +118,8 @@ describe('WebSocket Tool', () => {
 
   describe('Multiple Connections', () => {
     test('should handle multiple connections', async () => {
-      socketId = await client.testSocketConnect('wss://echo.websocket.org');
-      const socketId2 = await client.testSocketConnect('wss://echo.websocket.org');
+      socketId = await client.testSocketConnect(wsUrl);
+      const socketId2 = await client.testSocketConnect(wsUrl);
 
       try {
         expect(socketId).not.toBe(socketId2);

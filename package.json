@@ -32,25 +32,34 @@
     "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
     "test:integration": "jest __tests__/integration",
-    "test:tools": "jest __tests__/tools"
+    "test:tools": "jest __tests__/tools",
+    "mock-server": "ts-node __tests__/mocks/test-server.ts",
+    "mock-server:dev": "PORT=3333 ts-node __tests__/mocks/test-server.ts"
   },
   "dependencies": {
-    "graphql": "^16.11.0",
     "graphql-request": "^7.2.0",
     "puppeteer": "^24.16.2",
     "random-words": "^2.0.1",
-    "ws": "^8.18.3",
     "xmcp": "^0.1.10",
     "zod": "3.24.4"
   },
   "devDependencies": {
+    "@apollo/server": "^5.0.0",
     "@modelcontextprotocol/sdk": "^1.17.3",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
     "@types/ws": "^8.18.1",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "graphql": "^16.11.0",
     "jest": "^30.0.5",
     "swc-loader": "^0.2.6",
-    "ts-jest": "^29.4.1"
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
+    "ws": "^8.18.3"
   },
   "main": "./dist/stdio.js",
   "files": [

@@ -12,9 +12,11 @@ describe('MCP Protocol Integration', () => {
     test('should list tools directly', async () => {
       const tools = await (client as any).client.listTools();
       
-      expect(tools.tools).toBeDefined();
-      expect(Array.isArray(tools.tools)).toBe(true);
-      expect(tools.tools.length).toBeGreaterThan(0);
+      // Check if tools is the array directly or if it has a tools property
+      const toolsArray = tools.tools || tools;
+      expect(toolsArray).toBeDefined();
+      expect(Array.isArray(toolsArray)).toBe(true);
+      expect(toolsArray.length).toBeGreaterThan(0);
     });
   });
 
