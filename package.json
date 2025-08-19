@@ -26,7 +26,13 @@
   "scripts": {
     "build": "xmcp build",
     "dev": "xmcp dev",
-    "start": "node dist/stdio.js"
+    "start": "node dist/stdio.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose",
+    "test:integration": "jest __tests__/integration",
+    "test:tools": "jest __tests__/tools"
   },
   "dependencies": {
     "graphql": "^16.11.0",
@@ -38,9 +44,13 @@
     "zod": "3.24.4"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.3",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
     "@types/ws": "^8.18.1",
-    "swc-loader": "^0.2.6"
+    "jest": "^30.0.5",
+    "swc-loader": "^0.2.6",
+    "ts-jest": "^29.4.1"
   },
   "main": "./dist/stdio.js",
   "files": [
