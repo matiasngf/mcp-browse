@@ -45,6 +45,11 @@ export async function startTestServer(port: number = 0): Promise<TestServerInsta
     port: actualPort,
     close: () => {
       return new Promise((resolve) => {
+        // Close all active WebSocket connections
+        wss.clients.forEach((ws) => {
+          ws.close(1000, 'Server shutting down')
+        })
+
         wss.close(() => {
           httpServer.close(() => {
             resolve()

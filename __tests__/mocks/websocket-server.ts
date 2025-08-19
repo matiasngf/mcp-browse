@@ -21,6 +21,9 @@ export function createWebSocketMockServer(httpServer: Server) {
       messageCount: 0
     })
 
+    // Declare ping interval variable
+    let pingInterval: NodeJS.Timeout
+
     // Send welcome message
     ws.send(JSON.stringify({
       type: 'connection',
@@ -56,6 +59,10 @@ export function createWebSocketMockServer(httpServer: Server) {
     ws.on('close', (code, reason) => {
       const clientInfo = clients.get(ws)
       clients.delete(ws)
+      // Clear ping interval when connection closes
+      if (pingInterval) {
+        clearInterval(pingInterval)
+      }
     })
 
     ws.on('error', (error) => {
@@ -63,14 +70,17 @@ export function createWebSocketMockServer(httpServer: Server) {
       // Handle error silently
     })
 
-    // Ping client every 30 seconds to keep connection alive
-    const pingInterval = setInterval(() => {
+    // Ping client every 5 seconds to keep connection alive (shorter for tests)
+    pingInterval = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.ping()
       } else {
         clearInterval(pingInterval)
       }
-    }, 30000)
+    }, 5000)
+
+    // Allow the process to exit even if this timer is active
+    pingInterval.unref()
 
     ws.on('pong', () => {
       const clientInfo = clients.get(ws)
