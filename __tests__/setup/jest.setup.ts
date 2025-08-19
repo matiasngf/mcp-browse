@@ -18,8 +18,6 @@ beforeAll(async () => {
     return;
   }
 
-  console.log('Building MCP server...');
-
   // Check if build is needed by looking for the dist directory
   const distPath = path.join(process.cwd(), 'dist', 'stdio.js');
   const needsBuild = !fs.existsSync(distPath);
@@ -30,24 +28,16 @@ beforeAll(async () => {
         stdio: 'inherit',
         cwd: process.cwd()
       });
-      console.log('Build completed successfully');
     } catch (error) {
-      console.error('Failed to build server:', error);
       throw error;
     }
-  } else {
-    console.log('Using existing build');
   }
-
-  console.log('Initializing MCP client...');
 
   try {
     globalMCPClient = await MCPTestHelper.createTestClient();
     global.mcpClient = globalMCPClient;
     global.mcpClientInitialized = true;
-    console.log('MCP client initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize MCP client:', error);
     throw error;
   }
 }, 60000); // 60 second timeout for build and initialization
@@ -56,13 +46,10 @@ beforeAll(async () => {
 afterAll(async () => {
   // Only cleanup if we're the ones who initialized
   if (globalMCPClient && global.mcpClientInitialized) {
-    console.log('Cleaning up MCP client...');
-
     try {
       await globalMCPClient.cleanup();
-      console.log('MCP client cleaned up successfully');
     } catch (error) {
-      console.error('Error cleaning up MCP client:', error);
+      // Silent cleanup
     }
   }
 }, 10000);

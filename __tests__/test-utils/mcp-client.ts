@@ -31,7 +31,6 @@ export class MCPTestClient {
       throw new Error("Client is already connected");
     }
 
-    console.log(`[MCP Client] Connecting with command: ${this.config.command} ${this.config.args.join(' ')}`);
 
     // Filter out undefined values from process.env
     const processEnv = Object.entries(process.env).reduce((acc, [key, value]) => {
@@ -53,9 +52,7 @@ export class MCPTestClient {
     try {
       await this.client.connect(this.transport);
       this.connected = true;
-      console.log('[MCP Client] Successfully connected to MCP server');
     } catch (error) {
-      console.error('[MCP Client] Failed to connect:', error);
       throw error;
     }
   }
@@ -101,13 +98,10 @@ export class MCPTestClient {
   }
 
   async listTools(): Promise<any[]> {
-    console.log('[MCP Client] Listing tools...');
     try {
       const result = await this.client.listTools();
-      console.log(`[MCP Client] Found ${result.tools.length} tools:`, result.tools.map(t => t.name));
       return result.tools;
     } catch (error) {
-      console.error('[MCP Client] Failed to list tools:', error);
       throw error;
     }
   }
@@ -128,7 +122,6 @@ export class MCPTestClient {
       throw new Error("Client is not connected");
     }
 
-    console.log(`[MCP Client] Calling tool '${name}' with args:`, JSON.stringify(args, null, 2));
 
     try {
       const result = await this.client.callTool({
@@ -136,7 +129,6 @@ export class MCPTestClient {
         arguments: args
       });
 
-      console.log(`[MCP Client] Tool '${name}' raw result:`, JSON.stringify(result, null, 2));
 
       // Parse the result based on the CallToolResultSchema
       const validatedResult = CallToolResultSchema.parse(result);
@@ -151,10 +143,8 @@ export class MCPTestClient {
           if (name === 'get-rules') {
             try {
               const parsed = JSON.parse(text);
-              console.log(`[MCP Client] Tool '${name}' parsed result:`, parsed);
               return parsed;
             } catch {
-              console.log(`[MCP Client] Tool '${name}' text result:`, text);
               return text;
             }
           }
@@ -162,22 +152,17 @@ export class MCPTestClient {
           // For other tools, try to parse as JSON if it looks like JSON
           try {
             const parsed = JSON.parse(text);
-            console.log(`[MCP Client] Tool '${name}' parsed result:`, parsed);
             return parsed;
           } catch {
             // If not JSON, return as text
-            console.log(`[MCP Client] Tool '${name}' text result:`, text);
             return text;
           }
         }
-        console.log(`[MCP Client] Tool '${name}' content result:`, firstContent);
         return firstContent;
       }
 
-      console.log(`[MCP Client] Tool '${name}' validated result:`, validatedResult);
       return validatedResult;
     } catch (error: any) {
-      console.error(`[MCP Client] Tool '${name}' error:`, error);
       if (error.code === -32601) {
         throw new Error(`Tool '${name}' not found`);
       }

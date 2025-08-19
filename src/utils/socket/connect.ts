@@ -21,8 +21,6 @@ export interface ConnectParams {
 }
 
 export async function connectSocket(params: ConnectParams): Promise<string> {
-  console.log('[Socket Connect] Starting connection with params:', params);
-  
   const {
     url,
     protocols,
@@ -35,7 +33,6 @@ export async function connectSocket(params: ConnectParams): Promise<string> {
 
   // Validate URL
   if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
-    console.log('[Socket Connect] Invalid URL:', url);
     return JSON.stringify({
       success: false,
       error: "Invalid WebSocket URL. Must start with ws:// or wss://",
@@ -78,7 +75,6 @@ export async function connectSocket(params: ConnectParams): Promise<string> {
 
   // Set up event handlers
   socket.on('open', () => {
-    console.log(`[Socket Connect] Socket ${socketId} opened successfully`);
     updateSocketStatus(socketId, 'open')
     socketInstance.reconnectAttempts = 0
 
@@ -93,7 +89,6 @@ export async function connectSocket(params: ConnectParams): Promise<string> {
   })
 
   socket.on('message', (data: WebSocket.Data) => {
-    console.log(`[Socket Connect] Socket ${socketId} received message:`, data);
     const message: Message = {
       id: generateMessageId(),
       type: 'received',
@@ -104,7 +99,6 @@ export async function connectSocket(params: ConnectParams): Promise<string> {
   })
 
   socket.on('error', (error: Error) => {
-    console.log(`[Socket Connect] Socket ${socketId} error:`, error);
     const message: Message = {
       id: generateMessageId(),
       type: 'received',

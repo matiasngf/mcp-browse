@@ -68,8 +68,6 @@ export const metadata: ToolMetadata = {
 
 // Tool implementation
 export default async function fetch(params: InferSchema<typeof schema>) {
-  console.log('[Fetch Tool] Starting fetch with params:', params);
-  
   try {
     const { url, method, headers, body, timeout, followRedirects, signal, ...fetchOptions } = params
 
@@ -186,15 +184,12 @@ export default async function fetch(params: InferSchema<typeof schema>) {
     }, null, 2)
 
   } catch (error) {
-    console.log('[Fetch Tool] Error occurred:', error);
-    
     // Handle different error types
     let errorMessage = "Unknown error occurred"
     let errorType = "UnknownError"
 
     if (error instanceof Error) {
       errorMessage = error.message
-      console.log('[Fetch Tool] Error name:', error.name, 'Error message:', error.message);
 
       if (error.name === "AbortError") {
         errorType = "TimeoutError"
@@ -208,8 +203,6 @@ export default async function fetch(params: InferSchema<typeof schema>) {
         errorType = "InvalidURLError"
       }
     }
-
-    console.log('[Fetch Tool] Final error type:', errorType, 'Final error message:', errorMessage);
 
     return JSON.stringify({
       success: false,
