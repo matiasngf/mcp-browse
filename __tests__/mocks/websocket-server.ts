@@ -21,8 +21,6 @@ export function createWebSocketMockServer(httpServer: Server) {
       messageCount: 0
     })
 
-    console.log(`WebSocket client connected: ${clientId}`)
-
     // Send welcome message
     ws.send(JSON.stringify({
       type: 'connection',
@@ -37,7 +35,6 @@ export function createWebSocketMockServer(httpServer: Server) {
       clientInfo.messageCount++
 
       const message = data.toString()
-      console.log(`Received message from ${clientInfo.id}: ${message}`)
 
       // Echo the message back
       ws.send(message)
@@ -58,13 +55,12 @@ export function createWebSocketMockServer(httpServer: Server) {
 
     ws.on('close', (code, reason) => {
       const clientInfo = clients.get(ws)
-      console.log(`WebSocket client disconnected: ${clientInfo?.id} (code: ${code}, reason: ${reason})`)
       clients.delete(ws)
     })
 
     ws.on('error', (error) => {
       const clientInfo = clients.get(ws)
-      console.error(`WebSocket error for client ${clientInfo?.id}:`, error)
+      // Handle error silently
     })
 
     // Ping client every 30 seconds to keep connection alive
@@ -78,9 +74,7 @@ export function createWebSocketMockServer(httpServer: Server) {
 
     ws.on('pong', () => {
       const clientInfo = clients.get(ws)
-      if (clientInfo) {
-        console.log(`Pong received from ${clientInfo.id}`)
-      }
+      // Pong received
     })
   })
 

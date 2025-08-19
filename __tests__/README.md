@@ -134,9 +134,6 @@ npm test -- fetch.test.ts
 npm test -- --testNamePattern="should perform GET request"
 ```
 
-### Debug Mode
-Add `console.log` statements or use VS Code's Jest debugger
-
 ## Coverage
 
 Run coverage reports to ensure comprehensive testing:

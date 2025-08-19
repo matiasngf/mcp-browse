@@ -23,11 +23,9 @@ beforeAll(async () => {
   }
 
   // Start the test server first
-  console.log('Starting mock test server...');
   globalTestServer = await startTestServer(0); // Use port 0 for automatic port assignment
   global.testServer = globalTestServer;
   global.testServerUrl = `http://localhost:${globalTestServer.port}`;
-  console.log(`Mock test server started at ${global.testServerUrl}`);
 
   // Check if build is needed by looking for the dist directory
   const distPath = path.join(process.cwd(), 'dist', 'stdio.js');
@@ -68,9 +66,8 @@ afterAll(async () => {
   if (globalTestServer) {
     try {
       await globalTestServer.close();
-      console.log('Mock test server stopped');
     } catch (error) {
-      console.error('Error stopping test server:', error);
+      // Silent cleanup
     }
   }
 }, 10000);
