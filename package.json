@@ -29,7 +29,6 @@
     "start": "node dist/stdio.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
     "test:integration": "jest __tests__/integration",
     "test:tools": "jest __tests__/tools",
