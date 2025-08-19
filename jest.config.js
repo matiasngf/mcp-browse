@@ -24,13 +24,5 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   testTimeout: 30000,
-  setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest.setup.ts'],
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true
-      }
-    }
-  }
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest.setup.ts']
 };
