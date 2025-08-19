@@ -1,10 +1,10 @@
-import WebSocket from "ws"
+import * as WebSocket from "ws"
 import { generate as generateWords } from "random-words"
 
 // Socket instance interface
 export interface SocketInstance {
   id: string
-  socket: WebSocket
+  socket: WebSocket.WebSocket
   url: string
   createdAt: Date
   status: 'connecting' | 'open' | 'closing' | 'closed'
@@ -138,7 +138,7 @@ export function getMessages(
 export function cleanupClosedSockets(): void {
   Object.keys(sockets).forEach(id => {
     const socket = sockets[id]
-    if (socket.status === 'closed' && socket.socket.readyState === WebSocket.CLOSED) {
+    if (socket.status === 'closed' && socket.socket.readyState === 3) { // WebSocket.CLOSED = 3
       delete sockets[id]
     }
   })
