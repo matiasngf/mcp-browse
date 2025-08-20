@@ -202,12 +202,19 @@ export class MCPTestClient {
   }
 
   // GraphQL tools
-  async callGraphQLTool(params: any): Promise<any> {
-    return await this.callTool("graphql", params);
+  async callGraphQLTool(action: any): Promise<any> {
+    return await this.callTool("graphql", action);
   }
 
   async callGraphQLIntrospectTool(params: any): Promise<any> {
-    return await this.callTool("graphql-introspect", params);
+    // Convert old introspect params to new merged tool format
+    const mergedParams = {
+      action: {
+        type: "introspect",
+        ...params
+      }
+    };
+    return await this.callTool("graphql", mergedParams);
   }
 
   // Documentation tool

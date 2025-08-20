@@ -1,24 +1,52 @@
 import { z } from "zod"
 import { type ToolMetadata, type InferSchema } from "xmcp"
-import { GraphQLClient, gql } from "graphql-request"
+import { executeGraphQL } from "../utils/graphql/execute"
+import { introspectGraphQL } from "../utils/graphql/introspect"
 
-// Define the schema for tool parameters
+// Define the schema for tool parameters using discriminated union
 export const schema = {
-  endpoint: z.string().describe("The GraphQL endpoint URL"),
-  query: z.string().describe("The GraphQL query or mutation string"),
-  variables: z.record(z.any())
-    .optional()
-    .describe("Variables to pass to the GraphQL query/mutation"),
-  headers: z.record(z.string())
-    .optional()
-    .describe("HTTP headers to include in the request (e.g., authorization tokens)"),
-  operationName: z.string()
-    .optional()
-    .describe("Name of the operation to execute (useful when query contains multiple operations)"),
-  timeout: z.number()
-    .optional()
-    .default(30000)
-    .describe("Request timeout in milliseconds. Defaults to 30 seconds"),
+  action: z.discriminatedUnion("type", [
+    // GraphQL execution action
+    z.object({
+      type: z.literal("execute"),
+      endpoint: z.string().describe("The GraphQL endpoint URL"),
+      query: z.string().describe("The GraphQL query or mutation string"),
+      variables: z.record(z.any())
+        .optional()
+        .describe("Variables to pass to the GraphQL query/mutation"),
+      headers: z.record(z.string())
+        .optional()
+        .describe("HTTP headers to include in the request (e.g., authorization tokens)"),
+      operationName: z.string()
+        .optional()
+        .describe("Name of the operation to execute (useful when query contains multiple operations)"),
+      timeout: z.number()
+        .optional()
+        .default(30000)
+        .describe("Request timeout in milliseconds. Defaults to 30 seconds"),
+    }),
+    // GraphQL introspection action
+    z.object({
+      type: z.literal("introspect"),
+      endpoint: z.string().describe("The GraphQL endpoint URL to introspect"),
+      headers: z.record(z.string())
+        .optional()
+        .describe("HTTP headers to include in the request (e.g., authorization tokens)"),
+      action: z.enum(["full-schema", "list-operations", "get-type"])
+        .describe("What to fetch: full-schema gets the complete schema, list-operations lists available queries/mutations, get-type gets a specific type definition"),
+      typeName: z.string()
+        .optional()
+        .describe("The name of the type to fetch (required when action is 'get-type')"),
+      useCache: z.boolean()
+        .optional()
+        .default(true)
+        .describe("Whether to use cached schema if available"),
+      cacheTTL: z.number()
+        .optional()
+        .default(300000)
+        .describe("Cache time-to-live in milliseconds. Defaults to 5 minutes"),
+    }),
+  ]).describe("The action to perform with GraphQL"),
 }
 
 // Define tool metadata
@@ -34,139 +62,39 @@ export const metadata: ToolMetadata = {
 }
 
 // Tool implementation
-export default async function graphql(params: InferSchema<typeof schema>) {
-  const { endpoint, query, variables, headers, operationName, timeout } = params
-
+export default async function graphql({ action }: InferSchema<typeof schema>) {
   try {
-    // Validate query syntax
-    const document = gql`${query}`
+    switch (action.type) {
+      case "execute":
+        return await executeGraphQL(
+          action.endpoint,
+          action.query,
+          action.variables,
+          action.headers,
+          action.operationName,
+          action.timeout
+        )
 
-    // Create GraphQL client with configuration
-    const client = new GraphQLClient(endpoint, {
-      headers: headers || {},
-    })
+      case "introspect":
+        return await introspectGraphQL(
+          action.endpoint,
+          action.headers || {},
+          action.action,
+          action.typeName,
+          action.useCache,
+          action.cacheTTL
+        )
 
-    // Execute the GraphQL request
-    const startTime = Date.now()
-
-    // Set up timeout if specified
-    let timeoutId: NodeJS.Timeout | undefined
-    const timeoutPromise = timeout ? new Promise((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error(`Request timed out after ${timeout}ms`)), timeout)
-    }) : null
-
-    // Race between request and timeout
-    const data = await (timeoutPromise
-      ? Promise.race([
-        client.request(document, variables || {}),
-        timeoutPromise
-      ])
-      : client.request(document, variables || {}))
-
-    const responseTime = Date.now() - startTime
-
-    // Clear timeout if set
-    if (timeoutId) clearTimeout(timeoutId)
-
-    // Parse operation type from query
-    const operationType = detectOperationType(query)
-
-    return JSON.stringify({
-      success: true,
-      data,
-      operationType,
-      responseTime: `${responseTime}ms`,
-      request: {
-        endpoint,
-        operationName,
-        variables: variables || {},
-        headers: Object.keys(headers || {}).reduce((acc, key) => {
-          // Mask sensitive headers
-          if (key.toLowerCase().includes('authorization') ||
-            key.toLowerCase().includes('token') ||
-            key.toLowerCase().includes('key')) {
-            acc[key] = '[REDACTED]'
-          } else {
-            acc[key] = headers![key]
-          }
-          return acc
-        }, {} as Record<string, string>)
-      }
-    }, null, 2)
-
-  } catch (error) {
-    // Handle different error types
-    let errorDetails: any = {
-      success: false,
-      error: "Unknown error occurred",
-      errorType: "UnknownError",
-    }
-
-    if (error instanceof Error) {
-      // GraphQL errors from graphql-request
-      if ('response' in error && error.response) {
-        const graphqlError = error as any
-        errorDetails = {
+      default:
+        return JSON.stringify({
           success: false,
-          errorType: "GraphQLError",
-          errors: graphqlError.response.errors || [],
-          data: graphqlError.response.data || null,
-          status: graphqlError.response.status,
-          headers: graphqlError.response.headers,
-        }
-      }
-      // Network or other errors
-      else {
-        errorDetails.error = error.message
-
-        if (error.message.includes('timeout')) {
-          errorDetails.errorType = "TimeoutError"
-          errorDetails.error = `Request timed out after ${timeout}ms`
-        } else if (error.message.includes('Network') || error.message.includes('fetch')) {
-          errorDetails.errorType = "NetworkError"
-        } else if (error.message.includes('Syntax Error')) {
-          errorDetails.errorType = "SyntaxError"
-          errorDetails.error = "Invalid GraphQL query syntax"
-        }
-      }
+          error: "Invalid action type",
+        }, null, 2)
     }
-
-    // Add request details to error response
-    errorDetails.request = {
-      endpoint,
-      operationName,
-      variables: variables || {},
-      headers: Object.keys(headers || {}).reduce((acc, key) => {
-        if (key.toLowerCase().includes('authorization') ||
-          key.toLowerCase().includes('token') ||
-          key.toLowerCase().includes('key')) {
-          acc[key] = '[REDACTED]'
-        } else {
-          acc[key] = headers![key]
-        }
-        return acc
-      }, {} as Record<string, string>)
-    }
-
-    return JSON.stringify(errorDetails, null, 2)
+  } catch (error) {
+    return JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    }, null, 2)
   }
-}
-
-// Helper function to detect operation type
-function detectOperationType(query: string): string {
-  const normalizedQuery = query.trim().toLowerCase()
-
-  // Remove comments
-  const withoutComments = normalizedQuery.replace(/#.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')
-
-  // Check for operation type keywords
-  if (withoutComments.match(/^\s*query\b/) || withoutComments.match(/^\s*{\s*\w+/)) {
-    return "query"
-  } else if (withoutComments.match(/^\s*mutation\b/)) {
-    return "mutation"
-  } else if (withoutComments.match(/^\s*subscription\b/)) {
-    return "subscription"
-  }
-
-  return "query" // Default to query
 }

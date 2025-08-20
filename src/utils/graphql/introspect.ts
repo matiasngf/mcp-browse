@@ -1,90 +1,9 @@
-import { z } from "zod"
-import { type ToolMetadata, type InferSchema } from "xmcp"
 import { GraphQLClient, gql } from "graphql-request"
 import { getIntrospectionQuery, buildClientSchema, printSchema } from "graphql"
-
-// Cache for storing schemas
-const schemaCache = new Map<string, { schema: any; timestamp: number }>()
-
-// Define the schema for tool parameters
-export const schema = {
-  endpoint: z.string().describe("The GraphQL endpoint URL to introspect"),
-  headers: z.record(z.string())
-    .optional()
-    .describe("HTTP headers to include in the request (e.g., authorization tokens)"),
-  action: z.enum(["full-schema", "list-operations", "get-type"])
-    .describe("What to fetch: full-schema gets the complete schema, list-operations lists available queries/mutations, get-type gets a specific type definition"),
-  typeName: z.string()
-    .optional()
-    .describe("The name of the type to fetch (required when action is 'get-type')"),
-  useCache: z.boolean()
-    .optional()
-    .default(true)
-    .describe("Whether to use cached schema if available"),
-  cacheTTL: z.number()
-    .optional()
-    .default(300000) // 5 minutes
-    .describe("Cache time-to-live in milliseconds. Defaults to 5 minutes"),
-}
-
-// Define tool metadata
-export const metadata: ToolMetadata = {
-  name: "graphql-introspect",
-  description: "Introspect GraphQL schemas to discover available operations, types, and fields",
-  annotations: {
-    title: "GraphQL Schema Introspection",
-    readOnlyHint: true,
-    destructiveHint: false,
-    idempotentHint: true,
-  },
-}
-
-// Tool implementation
-export default async function graphqlIntrospect(params: InferSchema<typeof schema>) {
-  const { endpoint, headers, action, typeName, useCache, cacheTTL } = params
-
-  try {
-    // Get schema (from cache or fetch)
-    const introspectionData = await getSchema(endpoint, headers || {}, useCache, cacheTTL)
-
-    // Build schema from introspection result
-    const schema = buildClientSchema(introspectionData)
-
-    switch (action) {
-      case "full-schema":
-        return handleFullSchema(schema)
-
-      case "list-operations":
-        return handleListOperations(schema)
-
-      case "get-type":
-        if (!typeName) {
-          return JSON.stringify({
-            success: false,
-            error: "typeName is required when action is 'get-type'",
-          }, null, 2)
-        }
-        return handleGetType(schema, typeName)
-
-      default:
-        return JSON.stringify({
-          success: false,
-          error: `Unknown action: ${action}`,
-        }, null, 2)
-    }
-
-  } catch (error) {
-    return JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-      errorType: error instanceof Error && error.message.includes("Network") ? "NetworkError" : "IntrospectionError",
-      endpoint,
-    }, null, 2)
-  }
-}
+import { schemaCache } from "./index"
 
 // Get schema with caching
-async function getSchema(
+export async function getSchema(
   endpoint: string,
   headers: Record<string, string>,
   useCache: boolean,
@@ -116,7 +35,7 @@ async function getSchema(
 }
 
 // Handle full schema request
-function handleFullSchema(schema: any) {
+export function handleFullSchema(schema: any): string {
   const schemaSDL = printSchema(schema)
 
   return JSON.stringify({
@@ -129,7 +48,7 @@ function handleFullSchema(schema: any) {
 }
 
 // Handle list operations request
-function handleListOperations(schema: any) {
+export function handleListOperations(schema: any): string {
   const queryType = schema.getQueryType()
   const mutationType = schema.getMutationType()
   const subscriptionType = schema.getSubscriptionType()
@@ -176,7 +95,7 @@ function getOperationDetails(type: any) {
 }
 
 // Handle get type request
-function handleGetType(schema: any, typeName: string) {
+export function handleGetType(schema: any, typeName: string): string {
   const type = schema.getType(typeName)
 
   if (!type) {
@@ -226,4 +145,53 @@ function handleGetType(schema: any, typeName: string) {
     success: true,
     type: typeDetails,
   }, null, 2)
+}
+
+// Main introspection function
+export async function introspectGraphQL(
+  endpoint: string,
+  headers: Record<string, string> = {},
+  action: string,
+  typeName?: string,
+  useCache: boolean = true,
+  cacheTTL: number = 300000
+): Promise<string> {
+  try {
+    // Get schema (from cache or fetch)
+    const introspectionData = await getSchema(endpoint, headers, useCache, cacheTTL)
+
+    // Build schema from introspection result
+    const schema = buildClientSchema(introspectionData)
+
+    switch (action) {
+      case "full-schema":
+        return handleFullSchema(schema)
+
+      case "list-operations":
+        return handleListOperations(schema)
+
+      case "get-type":
+        if (!typeName) {
+          return JSON.stringify({
+            success: false,
+            error: "typeName is required when action is 'get-type'",
+          }, null, 2)
+        }
+        return handleGetType(schema, typeName)
+
+      default:
+        return JSON.stringify({
+          success: false,
+          error: `Unknown action: ${action}`,
+        }, null, 2)
+    }
+
+  } catch (error) {
+    return JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+      errorType: error instanceof Error && error.message.includes("Network") ? "NetworkError" : "IntrospectionError",
+      endpoint,
+    }, null, 2)
+  }
 }

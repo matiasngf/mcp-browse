@@ -264,18 +264,24 @@ export class MCPTestHelper {
   // GraphQL test helpers
   async testGraphQL(endpoint: string, query: string, variables?: any, headers?: any): Promise<any> {
     return await this.client.callGraphQLTool({
-      endpoint,
-      query,
-      variables,
-      headers
+      action: {
+        type: "execute",
+        endpoint,
+        query,
+        variables,
+        headers
+      }
     });
   }
 
   async testGraphQLIntrospect(endpoint: string, action: string, typeName?: string): Promise<any> {
-    return await this.client.callGraphQLIntrospectTool({
-      endpoint,
-      action,
-      typeName
+    return await this.client.callGraphQLTool({
+      action: {
+        type: "introspect",
+        endpoint,
+        action,
+        typeName
+      }
     });
   }
 
