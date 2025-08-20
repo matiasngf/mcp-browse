@@ -2,7 +2,7 @@ import { MCPTestClient } from './mcp-client';
 import path from 'path';
 
 export class MCPTestHelper {
-  private client: MCPTestClient;
+  public client: MCPTestClient;
 
   constructor(client: MCPTestClient) {
     this.client = client;
@@ -100,7 +100,90 @@ export class MCPTestHelper {
     });
   }
 
-  // Browser test helpers
+  // Puppeteer test helpers (consolidated tool)
+  async testPuppeteerBrowserLaunch(options?: any): Promise<any> {
+    const result = await this.client.callPuppeteerTool({
+      action: {
+        type: "launch-browser",
+        headless: options?.headless ?? true,
+        width: options?.width,
+        height: options?.height,
+        url: options?.url
+      }
+    });
+
+    // Handle both old and new response formats
+    if (result.success && result.browserId) {
+      return result.browserId;
+    }
+
+    // Return the full result for inspection if needed
+    return result.browserId || result;
+  }
+
+  async testPuppeteerBrowserList(): Promise<any> {
+    return await this.client.callPuppeteerTool({
+      action: {
+        type: "list-browsers"
+      }
+    });
+  }
+
+  async testPuppeteerBrowserClose(browserId: string): Promise<any> {
+    return await this.client.callPuppeteerTool({
+      action: {
+        type: "close-browser",
+        browserId
+      }
+    });
+  }
+
+  async testPuppeteerPageOpen(browserId: string, url?: string): Promise<any> {
+    const result = await this.client.callPuppeteerTool({
+      action: {
+        type: "open-page",
+        browserId,
+        url
+      }
+    });
+
+    // Handle both old and new response formats
+    if (result.success && result.pageId) {
+      return result.pageId;
+    }
+
+    // Return the full result for inspection if needed
+    return result.pageId || result;
+  }
+
+  async testPuppeteerPageList(): Promise<any> {
+    return await this.client.callPuppeteerTool({
+      action: {
+        type: "list-pages"
+      }
+    });
+  }
+
+  async testPuppeteerPageClose(pageId: string): Promise<any> {
+    return await this.client.callPuppeteerTool({
+      action: {
+        type: "close-page",
+        pageId
+      }
+    });
+  }
+
+  async testPuppeteerExecPage(pageId: string, source: string): Promise<any> {
+    return await this.client.callPuppeteerTool({
+      action: {
+        type: "exec-page",
+        pageId,
+        source
+      }
+    });
+  }
+
+  // Browser test helpers (legacy - for backward compatibility)
   async testBrowserLaunch(options?: any): Promise<any> {
     const result = await this.client.callBrowserTool({
       action: {

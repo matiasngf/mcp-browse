@@ -183,17 +183,22 @@ export class MCPTestClient {
     return await this.callTool("socket", action);
   }
 
+  // Puppeteer consolidated tool
+  async callPuppeteerTool(action: any): Promise<any> {
+    return await this.callTool("puppeteer", action);
+  }
+
   // Puppeteer browser tools
   async callBrowserTool(action: any): Promise<any> {
-    return await this.callTool("puppeteer-browser", action);
+    return await this.callTool("puppeteer", action);
   }
 
   async callPageTool(action: any): Promise<any> {
-    return await this.callTool("puppeteer-page", action);
+    return await this.callTool("puppeteer", action);
   }
 
   async callExecPageTool(pageId: string, source: string): Promise<any> {
-    return await this.callTool("puppeteer-exec-page", { pageId, source });
+    return await this.callTool("puppeteer", { pageId, source });
   }
 
   // GraphQL tools

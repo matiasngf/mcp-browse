@@ -3,10 +3,15 @@ import { type ToolMetadata, type InferSchema } from "xmcp"
 import { closeBrowser } from "../utils/puppeteer/close-browsers"
 import { listBrowsers } from "../utils/puppeteer/list-browsers"
 import { launchBrowser } from "../utils/puppeteer/launch-browser"
+import { listPages } from "../utils/puppeteer/list-pages"
+import { openPage } from "../utils/puppeteer/open-page"
+import { closePage } from "../utils/puppeteer/close-page"
+import { execPage } from "../utils/puppeteer/exec-page"
 
 // Define the schema for tool parameters using discriminated union
 export const schema = {
   action: z.discriminatedUnion("type", [
+    // Browser actions
     z.object({
       type: z.literal("list-browsers"),
     }),
@@ -32,15 +37,36 @@ export const schema = {
       type: z.literal("close-browser"),
       browserId: z.string().describe("The ID of the browser instance to close"),
     }),
-  ]).describe("The action to perform on browsers"),
+    // Page actions
+    z.object({
+      type: z.literal("list-pages"),
+    }),
+    z.object({
+      type: z.literal("open-page"),
+      browserId: z.string().describe("The ID of the browser instance to create a page in"),
+      url: z.string().optional().describe("Optional URL to navigate to after creating the page"),
+    }),
+    z.object({
+      type: z.literal("close-page"),
+      pageId: z.string().describe("The ID of the page to close"),
+    }),
+    // Exec action
+    z.object({
+      type: z.literal("exec-page"),
+      pageId: z.string()
+        .describe("The ID of the page to execute code on"),
+      source: z.string()
+        .describe("JavaScript code to execute on the page. The code has access to the 'page' object and should return a value"),
+    }),
+  ]).describe("The action to perform with Puppeteer"),
 }
 
 // Define tool metadata
 export const metadata: ToolMetadata = {
-  name: "puppeteer-browser",
-  description: "Manage browser instances - list all browsers, launch new browsers, or close existing browsers",
+  name: "puppeteer",
+  description: "Control browsers and pages with Puppeteer - launch/close browsers, open/close pages, execute JavaScript, and more",
   annotations: {
-    title: "Puppeteer Browser Management",
+    title: "Puppeteer Control",
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,
@@ -48,9 +74,10 @@ export const metadata: ToolMetadata = {
 }
 
 // Tool implementation
-export default async function browser({ action }: InferSchema<typeof schema>) {
+export default async function puppeteer({ action }: InferSchema<typeof schema>) {
   try {
     switch (action.type) {
+      // Browser actions
       case "list-browsers":
         return await listBrowsers()
 
@@ -59,6 +86,20 @@ export default async function browser({ action }: InferSchema<typeof schema>) {
 
       case "close-browser":
         return await closeBrowser(action.browserId)
+
+      // Page actions
+      case "list-pages":
+        return await listPages()
+
+      case "open-page":
+        return await openPage(action.browserId, action.url)
+
+      case "close-page":
+        return await closePage(action.pageId)
+
+      // Exec action
+      case "exec-page":
+        return await execPage(action.pageId, action.source)
 
       default:
         return JSON.stringify({

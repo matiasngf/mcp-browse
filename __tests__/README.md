@@ -18,11 +18,8 @@ __tests__/
 ├── tools/                   # Unit tests for each tool
 │   ├── fetch.test.ts
 │   ├── socket.test.ts
-│   ├── puppeteer-browser.test.ts
-│   ├── puppeteer-page.test.ts
-│   ├── puppeteer-exec-page.test.ts
+│   ├── puppeteer.test.ts
 │   ├── graphql.test.ts
-│   ├── graphql-introspect.test.ts
 │   └── get-rules.test.ts
 ├── integration/             # Integration tests
 │   └── mcp-protocol.test.ts
