@@ -3,7 +3,7 @@
 A Model Context Protocol server providing tools for HTTP requests, GraphQL queries, WebSocket connections, and browser automation using Puppeteer.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/matiasngf/mcp-fetch/refs/heads/main/mcp-fetch-2.png" alt="MCP Fetch Logo"/>
+  <img src="https://raw.githubusercontent.com/matiasngf/mcp-fetch/refs/heads/main/mcp-fetch.png" alt="MCP Fetch Logo"/>
 </p>
 
 
