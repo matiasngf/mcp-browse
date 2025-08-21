@@ -19,13 +19,21 @@ Add this to your MCP settings configuration file:
 }
 ```
 
+## Installation
+
+If the puppeteer tool is not working, remember to install the chrome browser
+
+```bash
+npx puppeteer browsers install chrome
+```
+
 ## Features
 
-- 🌐 **HTTP Requests**: Perform HTTP requests with full control over method, headers, and body
-- 📡 **GraphQL Client**: Execute queries/mutations and introspect GraphQL schemas
-- 🔌 **WebSocket Management**: Connect, send, receive messages, and manage WebSocket connections
-- 🌍 **Browser Automation**: Launch browsers, create pages, and execute JavaScript using Puppeteer
-- 📋 **Comprehensive Docs**: Built-in documentation via `get-rules` tool
+- **HTTP Requests**: Perform HTTP requests with full control over method, headers, and body
+- **GraphQL Client**: Execute queries/mutations and introspect GraphQL schemas
+- **WebSocket Management**: Connect, send, receive messages, and manage WebSocket connections
+- **Browser Automation**: Launch browsers, create pages, and execute JavaScript using Puppeteer
+- **Comprehensive Docs**: AI-ready documentation via `get-rules` tool
 
 ## Available Tools
 

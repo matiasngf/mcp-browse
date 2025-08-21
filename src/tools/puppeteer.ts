@@ -56,7 +56,7 @@ export const schema = {
       pageId: z.string()
         .describe("The ID of the page to execute code on"),
       source: z.string()
-        .describe("JavaScript code to execute on the page. The code has access to the 'page' object and should return a value"),
+        .describe("JavaScript code to execute. Will be executed outside of the page context. You can run commands like await page.goto('https://example.com') or await page.evaluate(() => { ... }). The code you write should return a string value that will serve as the result of the tool call."),
     }),
   ]).describe("The action to perform with Puppeteer"),
 }
