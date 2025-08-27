@@ -218,7 +218,7 @@ export class MCPTestClient {
   }
 
   // Documentation tool
-  async callGetRulesTool(): Promise<any> {
-    return await this.callTool("get-rules", { random_string: "test" });
+  async callGetRulesTool(rules?: string[]): Promise<any> {
+    return await this.callTool("get-rules", { rules: rules || ["quickStart"] });
   }
 }

@@ -12,7 +12,7 @@ describe('Tool Integration Tests', () => {
 
   describe('Basic Tool Functionality', () => {
     test('get-rules tool should work', async () => {
-      const result = await client.testGetRules();
+      const result = await client.testGetRules(["quickStart", "tools"]);
 
       expect(result).toBeDefined();
       expect(result.quickStart).toBeDefined();

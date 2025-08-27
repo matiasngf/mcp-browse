@@ -286,8 +286,8 @@ export class MCPTestHelper {
   }
 
   // Documentation test helper
-  async testGetRules(): Promise<any> {
-    return await this.client.callGetRulesTool();
+  async testGetRules(rules?: string[]): Promise<any> {
+    return await this.client.callGetRulesTool(rules);
   }
 
   // Utility methods for testing

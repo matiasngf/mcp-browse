@@ -1,6 +1,22 @@
-import { type ToolMetadata } from "xmcp"
+import { z } from "zod"
+import { type ToolMetadata, type InferSchema } from "xmcp"
 
-export const schema = {}
+const AVAILABLE_RULES = [
+  "quickStart",
+  "commonErrors",
+  "interactions",
+  "tools",
+  "workflow",
+  "performanceOptimization",
+  "gamingTips",
+  "debuggingWithPuppeteer"
+] as const
+
+type RuleKey = typeof AVAILABLE_RULES[number]
+
+export const schema = {
+  rules: z.array(z.enum(AVAILABLE_RULES)).describe("The documentation sections to retrieve")
+}
 
 export const metadata: ToolMetadata = {
   name: "get-rules",
@@ -13,8 +29,10 @@ export const metadata: ToolMetadata = {
   },
 }
 
-export default function getRules() {
-  const documentation = {
+type GetRulesArgs = InferSchema<typeof schema>
+
+export default function getRules({ rules }: GetRulesArgs) {
+  const documentation: Record<RuleKey, any> = {
     quickStart: {
       title: "Fast & Safe Web Automation",
       bestApproach: `// Get everything at once - MUCH faster than multiple calls
@@ -363,5 +381,14 @@ return {
     }
   }
 
-  return JSON.stringify(documentation, null, 2)
+  // Build result object with only requested rules
+  const result: Partial<Record<RuleKey, any>> = {}
+
+  for (const rule of rules) {
+    if (rule in documentation) {
+      result[rule] = documentation[rule]
+    }
+  }
+
+  return JSON.stringify(result, null, 2)
 }
