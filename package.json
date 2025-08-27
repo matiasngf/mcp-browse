@@ -1,6 +1,6 @@
 {
   "name": "mcp-fetch",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A Model Context Protocol server providing tools for HTTP requests, GraphQL queries, WebSocket connections, and browser automation",
   "keywords": [
     "mcp",
